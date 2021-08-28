@@ -12,29 +12,33 @@ import CoreLocation
 
 class ViewController: UIViewController {
     
+//MARK: - Pre Initialization
     private var map = MKMapView()
-    
     var locationManager = CLLocationManager()
     let regionInMeters: Double = 2000
-    let weatherAPI = WeatherAPIBrain()
+    var weatherName: String? = ""
+    var temperature: Double? = 0.0
+    var weatherAPI = WeatherAPIBrain()
+    var infoViewController = InfoViewController()
+ 
     
-    
+//MARK: - ViewDidLoad Function
     override func viewDidLoad() {
         
         super.viewDidLoad()
-        
-        initializeMap()
-        
-        checkLocationServices()
+        weatherAPI.delegate = self                          // Setting Up WeatherAPI Delegate
+        initializeMap()                                     // Initializing Map
+        checkLocationServices()                             // Calling CheckLocationServices
         
     }
+    
     
 // MARK: - ViewDidLayoutSubviews Function
     override func viewDidLayoutSubviews() {
         
         super.viewDidLayoutSubviews()
-        
         map.frame = view.bounds
+        
     }
     
     
@@ -44,7 +48,30 @@ class ViewController: UIViewController {
         
         view.addSubview(map)
         
+        addInfoViewController()
+        
     }
+    
+
+// MARK: - Func to add InfoViewController
+    
+    func addInfoViewController() {
+        
+        addChild(infoViewController)
+        
+        view.addSubview(infoViewController.view)
+        
+        infoViewController.didMove(toParent: self)
+        
+        infoViewController.view.snp.makeConstraints { maker in
+            maker.left.equalToSuperview()
+            maker.right.equalToSuperview()
+            maker.height.equalTo(200)
+            maker.bottom.equalToSuperview()
+        }
+    }
+    
+
     
 // MARK: - Setup Location Manager
     func setUpLocationManager() {
@@ -53,6 +80,7 @@ class ViewController: UIViewController {
         
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
     }
+
     
 // MARK: - Check location services
     func checkLocationServices() {
@@ -60,7 +88,9 @@ class ViewController: UIViewController {
         if CLLocationManager.locationServicesEnabled() {
 
             setUpLocationManager()
+            
             checkLocationManagerAutorization()
+            
         } else {
 
         }
@@ -92,12 +122,9 @@ class ViewController: UIViewController {
             
             locationManager.startUpdatingLocation()
             
-            
-    
             break
         case .denied:
          
-            
             break
         case .notDetermined:
            
@@ -113,6 +140,8 @@ class ViewController: UIViewController {
         }
     }
 }
+
+
 
 
 // MARK: - Extension View Controller
@@ -138,5 +167,39 @@ extension ViewController: CLLocationManagerDelegate {
         
     }
     
+    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+        
+        print("Error")
+        
+    }
+    
+}
+
+
+//MARK: - WeatherManagerDelegate Protocol
+extension ViewController: WeatherManagerDelegate {
+
+    
+    // Update weather function
+    func didUpdateWeather(weather: WeatherStruct?){
+            
+        // Async dispatchQueue Method
+        DispatchQueue.main.async { [weak self] in
+            
+            if let weather = weather {
+                
+                self?.temperature = weather.temp
+                self?.weatherName = weather.name
+                
+            }
+        }
+       
+    }
+    
+    
+    // Catch Error for testing function
+    func didCatchError(error: Error) {
+        print(error)
+    }
 }
 

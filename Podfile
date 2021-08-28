@@ -6,5 +6,6 @@ target 'Map' do
   use_frameworks!
 
   pod 'SnapKit'
+  pod 'FloatingPanel'
 
 end
