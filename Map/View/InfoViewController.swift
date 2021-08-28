@@ -18,15 +18,17 @@ class InfoViewController: UIViewController {
     override func viewDidLoad() {
         
         super.viewDidLoad()
-        
-        view.backgroundColor = UIColor(red: 2/250, green: 29/250, blue: 64/250, alpha: 0.9)
-        
+    
         initialize()
     }
     
 // MARK: - Initialize Function
     
     private func initialize() {
+        
+        view.backgroundColor = UIColor(red: 2/250, green: 29/250, blue: 64/250, alpha: 0.9)
+        
+        view.layer.cornerRadius = 30
         
         addTempLabel()
         
@@ -76,6 +78,7 @@ class InfoViewController: UIViewController {
        
         
     }
+   
     
 // MARK: - Add ButtonReset
     private func addButtonReset() {
@@ -91,11 +94,20 @@ class InfoViewController: UIViewController {
         buttonReset.setBackgroundColor(UIColor(red: 242/250, green: 204/250, blue: 93/250, alpha: 1), forState: .highlighted)
         
         buttonReset.snp.makeConstraints { maker in
-            maker.top.equalToSuperview()
-            maker.right.equalToSuperview()
-            maker.bottom.equalToSuperview()
-            maker.left.equalTo(regionLabel.snp.right).offset(80)
+            
+            maker.top.equalTo(self.view.snp.top).offset(30)
+            
+            maker.right.equalTo(self.view).offset(-40)
+            
+            maker.left.equalTo(temperatureLabel.snp.right).offset(40)
+            
+            maker.bottom.equalTo(self.view.safeAreaLayoutGuide.snp.bottom)
+        
         }
+        
+        buttonReset.clipsToBounds = true
+        
+        buttonReset.layer.cornerRadius = 30.0
         
         buttonReset.addTarget(self, action: #selector(buttonTapped), for: .touchUpInside)
         
@@ -103,7 +115,7 @@ class InfoViewController: UIViewController {
     
     @objc func buttonTapped(){
         
-       print("Hello")
+        
         
     }
 }

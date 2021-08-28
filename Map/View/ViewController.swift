@@ -47,7 +47,6 @@ class ViewController: UIViewController {
     private func initializeMap() {
         
         view.addSubview(map)
-        
         addInfoViewController()
         
     }
@@ -92,6 +91,7 @@ class ViewController: UIViewController {
             checkLocationManagerAutorization()
             
         } else {
+            
 
         }
         
@@ -101,6 +101,7 @@ class ViewController: UIViewController {
     
     func centerViewOnUsersLocation() {
         if let location = locationManager.location?.coordinate {
+            
             let region = MKCoordinateRegion.init(center: location, latitudinalMeters: regionInMeters, longitudinalMeters: regionInMeters)
             
             weatherAPI.fetchWeather(latitude: location.latitude, longitude: location.longitude)
