@@ -16,6 +16,7 @@ class ViewController: UIViewController {
     
     var locationManager = CLLocationManager()
     let regionInMeters: Double = 2000
+    let weatherAPI = WeatherAPIBrain()
     
     
     override func viewDidLoad() {
@@ -57,7 +58,7 @@ class ViewController: UIViewController {
     func checkLocationServices() {
         
         if CLLocationManager.locationServicesEnabled() {
-            
+
             setUpLocationManager()
             checkLocationManagerAutorization()
         } else {
@@ -71,6 +72,8 @@ class ViewController: UIViewController {
     func centerViewOnUsersLocation() {
         if let location = locationManager.location?.coordinate {
             let region = MKCoordinateRegion.init(center: location, latitudinalMeters: regionInMeters, longitudinalMeters: regionInMeters)
+            
+            weatherAPI.fetchWeather(latitude: location.latitude, longitude: location.longitude)
             
             map.setRegion(region, animated: true)
         }
@@ -86,6 +89,10 @@ class ViewController: UIViewController {
             map.showsUserLocation = true
             
             centerViewOnUsersLocation()
+            
+            locationManager.startUpdatingLocation()
+            
+            
     
             break
         case .denied:
@@ -94,7 +101,6 @@ class ViewController: UIViewController {
             break
         case .notDetermined:
            
-            
             locationManager.requestWhenInUseAuthorization()
             break
         case .restricted:
@@ -112,7 +118,23 @@ class ViewController: UIViewController {
 // MARK: - Extension View Controller
 extension ViewController: CLLocationManagerDelegate {
     
+    // Tracking User Location Dynamically
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        
+        guard let location = locations.last else { return }
+        
+        let center = CLLocationCoordinate2D(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
+        
+        let region = MKCoordinateRegion.init(center: center, latitudinalMeters: regionInMeters, longitudinalMeters: regionInMeters)
+        
+        map.setRegion(region, animated: true)
+        
+    }
+    
+    // Tracking location authorization
+    func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
+        
+        checkLocationManagerAutorization()
         
     }
     
