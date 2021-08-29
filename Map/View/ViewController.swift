@@ -17,7 +17,7 @@ class ViewController: UIViewController {
     var locationManager = CLLocationManager()
     let regionInMeters: Double = 2000
     var weatherName: String?
-    var temperature: Double? 
+    var temperature: Double?
     var weatherAPI = WeatherAPIBrain()
     var infoViewController = InfoViewController()
     
@@ -72,10 +72,8 @@ class ViewController: UIViewController {
                     self.infoViewController.regionLabel.text = weatherName
                     
                     self.infoViewController.temperatureLabel.text = String(temperature)
-                
-            
-        }
         
+        }
         
         infoViewController.view.snp.makeConstraints { maker in
             maker.left.equalToSuperview()
@@ -106,6 +104,7 @@ class ViewController: UIViewController {
             checkLocationManagerAutorization()
             
         } else {
+            
             
 
         }
@@ -153,6 +152,7 @@ class ViewController: UIViewController {
         case .authorizedAlways:
             
             break
+        
         }
     }
 }

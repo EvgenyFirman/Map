@@ -120,7 +120,8 @@ class InfoViewController: UIViewController {
     
     @objc func buttonTapped(){
         
-    
+        ViewController().checkLocationServices()
+        
     }
     
 // MARK: - Add Spinnner
