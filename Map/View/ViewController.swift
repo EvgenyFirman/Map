@@ -1,18 +1,17 @@
-//
 //  ViewController.swift
 //  Map
-//
 //  Created by Евгений Фирман on 27.08.2021.
-//
+
 
 import UIKit
 import MapKit
 import SnapKit
 import CoreLocation
+import SystemConfiguration
 
 class ViewController: UIViewController {
     
-//MARK: - Pre Initialization
+    //MARK: - Pre Initialization
     private var map = MKMapView()
     var locationManager = CLLocationManager()
     let regionInMeters: Double = 2000
@@ -21,14 +20,17 @@ class ViewController: UIViewController {
     var weatherAPI = WeatherAPIBrain()
     var infoViewController = InfoViewController()
     
- 
+    
     
 //MARK: - ViewDidLoad Function
     override func viewDidLoad() {
         
         super.viewDidLoad()
+        
         weatherAPI.delegate = self                          // Setting Up WeatherAPI Delegate
+        
         initializeMap()                                     // Initializing Map
+        
         checkLocationServices()                             // Calling CheckLocationServices
         
     }
@@ -41,11 +43,28 @@ class ViewController: UIViewController {
         
         map.frame = view.bounds
         
+        if isInternetAvailable() {
+            
+            print("Интернет соединение доступно")
+            
+            return
+            
+        } else {
+            
+            let alert = UIAlertController(title: "Нет интернет соединения", message: "Отсутствует интернет соединение, подключите интернет и попробуйте снова.", preferredStyle: .alert)
+            
+            alert.addAction(UIAlertAction(title: "Ок", style: .default, handler: nil))
+            
+            present(alert, animated: true, completion: nil)
+            
+            return
+        }
     }
     
     
     
-// MARK: - Initialize map view
+    
+    // MARK: - Initialize map view
     private func initializeMap() {
         
         view.addSubview(map)
@@ -56,9 +75,8 @@ class ViewController: UIViewController {
         
     }
     
-
-// MARK: - Func to add InfoViewController
     
+    // MARK: - Func to add InfoViewController
     func addInfoViewController() {
         
         addChild(infoViewController)
@@ -66,13 +84,13 @@ class ViewController: UIViewController {
         view.addSubview(infoViewController.view)
         
         infoViewController.didMove(toParent: self)
-            
-            if let weatherName = self.weatherName , let temperature = self.temperature {
-                
-                    self.infoViewController.regionLabel.text = weatherName
-                    
-                    self.infoViewController.temperatureLabel.text = String(temperature)
         
+        if let weatherName = self.weatherName , let temperature = self.temperature {
+            
+            self.infoViewController.regionLabel.text = weatherName
+            
+            self.infoViewController.temperatureLabel.text = String(temperature)
+            
         }
         
         infoViewController.view.snp.makeConstraints { maker in
@@ -83,35 +101,42 @@ class ViewController: UIViewController {
         }
     }
     
-
     
-// MARK: - Setup Location Manager
+    
+    // MARK: - Setup Location Manager
     func setUpLocationManager() {
         
         locationManager.delegate = self
         
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
     }
-
     
-// MARK: - Check location services
+    
+    // MARK: - Check location services
     func checkLocationServices() {
         
         if CLLocationManager.locationServicesEnabled() {
-
+            
             setUpLocationManager()
             
             checkLocationManagerAutorization()
             
         } else {
             
+            let alert = UIAlertController(title: "Сервис геолокации недоступен", message: "Подключите сервис геолокации и попробуйте снова", preferredStyle: .alert)
             
-
+            alert.addAction(UIAlertAction(title: "Ок", style: .default, handler: nil))
+            
+            present(alert, animated: true, completion: nil)
+            
+            return
+            
         }
         
     }
     
-// MARK: - Allign View on Users Location
+    
+    // MARK: - Allign View on Users Location
     
     func centerViewOnUsersLocation() {
         if let location = locationManager.location?.coordinate {
@@ -123,8 +148,9 @@ class ViewController: UIViewController {
             map.setRegion(region, animated: true)
         }
     }
-
-// MARK: - Check Location Manager Autorization Function
+    
+    
+    // MARK: - Check Location Manager Autorization Function
     func checkLocationManagerAutorization() {
         
         switch locationManager.authorizationStatus {
@@ -139,10 +165,10 @@ class ViewController: UIViewController {
             
             break
         case .denied:
-         
+            
             break
         case .notDetermined:
-           
+            
             locationManager.requestWhenInUseAuthorization()
             break
         case .restricted:
@@ -152,8 +178,40 @@ class ViewController: UIViewController {
         case .authorizedAlways:
             
             break
-        
         }
+    }
+    
+    
+// MARK: - Check if internet available Function
+    
+    func isInternetAvailable() -> Bool {
+        
+        var zeroAddress = sockaddr_in()
+        
+        zeroAddress.sin_len = UInt8(MemoryLayout.size(ofValue: zeroAddress))
+        
+        zeroAddress.sin_family = sa_family_t(AF_INET)
+        
+        let defaultRouteReachability = withUnsafePointer(to: &zeroAddress) {
+            
+            $0.withMemoryRebound(to: sockaddr.self, capacity: 1) {zeroSockAddress in
+                
+                SCNetworkReachabilityCreateWithAddress(nil, zeroSockAddress)
+            }
+        }
+        
+        var flags = SCNetworkReachabilityFlags()
+        
+        if !SCNetworkReachabilityGetFlags(defaultRouteReachability!, &flags) {
+            
+            return false
+            
+        }
+        let isReachable = flags.contains(.reachable)
+        
+        let needsConnection = flags.contains(.connectionRequired)
+        
+        return (isReachable && !needsConnection)
     }
 }
 
@@ -185,7 +243,13 @@ extension ViewController: CLLocationManagerDelegate {
     
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         
-        print("Error")
+        let alert = UIAlertController(title: "Менеджер локации недоступен", message: "Обратитесь в поддержку приложения", preferredStyle: .alert)
+        
+        alert.addAction(UIAlertAction(title: "Ок", style: .default, handler: nil))
+        
+        present(alert, animated: true, completion: nil)
+        
+        return
         
     }
     
@@ -194,17 +258,16 @@ extension ViewController: CLLocationManagerDelegate {
 
 //MARK: - WeatherManagerDelegate Protocol
 extension ViewController: WeatherManagerDelegate {
-
+    
     
     // Update weather function
     func didUpdateWeather(weather: WeatherStruct?){
         
-            
         // Async dispatchQueue Method
         DispatchQueue.main.async { [weak self] in
             
             if let weather = weather {
-
+                
                 self?.infoViewController.temperatureLabel.text = "\(String(format:"%.1f",weather.temp))˚"
                 
                 self?.infoViewController.regionLabel.text = weather.name
@@ -212,7 +275,7 @@ extension ViewController: WeatherManagerDelegate {
                 self?.infoViewController.removeSpinner()
             }
         }
-       
+        
     }
     
     
