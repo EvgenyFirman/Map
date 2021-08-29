@@ -16,10 +16,11 @@ class ViewController: UIViewController {
     private var map = MKMapView()
     var locationManager = CLLocationManager()
     let regionInMeters: Double = 2000
-    var weatherName: String? = ""
-    var temperature: Double? = 0.0
+    var weatherName: String?
+    var temperature: Double?
     var weatherAPI = WeatherAPIBrain()
     var infoViewController = InfoViewController()
+    
  
     
 //MARK: - ViewDidLoad Function
@@ -37,6 +38,7 @@ class ViewController: UIViewController {
     override func viewDidLayoutSubviews() {
         
         super.viewDidLayoutSubviews()
+        
         map.frame = view.bounds
         
     }
@@ -47,6 +49,9 @@ class ViewController: UIViewController {
     private func initializeMap() {
         
         view.addSubview(map)
+        
+        infoViewController.addSpinner()
+        
         addInfoViewController()
         
     }
@@ -61,6 +66,14 @@ class ViewController: UIViewController {
         view.addSubview(infoViewController.view)
         
         infoViewController.didMove(toParent: self)
+            
+            if let weatherName = self.weatherName , let temperature = self.temperature {
+                
+                    self.infoViewController.regionLabel.text = weatherName
+                    
+                    self.infoViewController.temperatureLabel.text = String(temperature)
+        
+        }
         
         infoViewController.view.snp.makeConstraints { maker in
             maker.left.equalToSuperview()
@@ -91,6 +104,7 @@ class ViewController: UIViewController {
             checkLocationManagerAutorization()
             
         } else {
+            
             
 
         }
@@ -138,6 +152,7 @@ class ViewController: UIViewController {
         case .authorizedAlways:
             
             break
+        
         }
     }
 }
@@ -183,15 +198,18 @@ extension ViewController: WeatherManagerDelegate {
     
     // Update weather function
     func didUpdateWeather(weather: WeatherStruct?){
+        
             
         // Async dispatchQueue Method
         DispatchQueue.main.async { [weak self] in
             
             if let weather = weather {
+
+                self?.infoViewController.temperatureLabel.text = "\(String(format:"%.1f",weather.temp))˚"
                 
-                self?.temperature = weather.temp
-                self?.weatherName = weather.name
+                self?.infoViewController.regionLabel.text = weather.name
                 
+                self?.infoViewController.removeSpinner()
             }
         }
        
