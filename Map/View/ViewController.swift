@@ -166,6 +166,13 @@ class ViewController: UIViewController {
             break
         case .denied:
             
+            let alert = UIAlertController(title: "Запрещено использовать геолокацию", message: "Приложение не сможет корректно функционировать", preferredStyle: .alert)
+            
+            alert.addAction(UIAlertAction(title: "Ок", style: .default, handler: nil))
+            
+            present(alert, animated: true, completion: nil)
+            
+            
             break
         case .notDetermined:
             
@@ -173,9 +180,29 @@ class ViewController: UIViewController {
             break
         case .restricted:
             
+            let alert = UIAlertController(title: "Запрещено использовать геолокацию", message: "Приложение не сможет корректно функционировать", preferredStyle: .alert)
+            
+            alert.addAction(UIAlertAction(title: "Ок", style: .default, handler: nil))
+            
+            present(alert, animated: true, completion: nil)
             
             break
         case .authorizedAlways:
+            
+            map.showsUserLocation = true
+            
+            centerViewOnUsersLocation()
+            
+            locationManager.startUpdatingLocation()
+            
+            break
+        @unknown default:
+            
+            let alert = UIAlertController(title: "Фатальная ошибка приложения", message: "Обратитесь в поддержку", preferredStyle: .alert)
+            
+            alert.addAction(UIAlertAction(title: "Ок", style: .default, handler: nil))
+            
+            present(alert, animated: true, completion: nil)
             
             break
         }
